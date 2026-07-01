@@ -9,7 +9,7 @@ class CounterViewModel{
 
   int get counter => _counterService.counter;
 
-  void handleEvent(CounterEvent event) {
+  void onEvent(CounterEvent event) {
     switch (event) {
       case CounterEvent.increment:
         _counterService.increment();

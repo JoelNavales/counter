@@ -1,64 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-
+import 'package:flutter_application_counter/viewmodel/counter_view_model.dart';
 
 import '../events/counter_event.dart';
-import '../viewmodel/counter_view_model.dart';
 
-class CounterView extends HookWidget {
-  final CounterViewModel viewModel;
 
-  const CounterView({Key? key, required this.viewModel}) : super(key: key);
+class CounterScreen extends HookWidget{
+  CounterScreen({super.key});
+
+  final vm = CounterViewModel();
 
   @override
   Widget build(BuildContext context) {
-    final counter = useState<int>(viewModel.counter);
+    final clicks = useState(0);
+    useEffect(() {
+      print("Application Started");
+
+      return () {
+        vm.dispose();
+      };
+    }, []);
 
     useEffect(() {
-      final subscription = viewModel.counterStream.listen((value) {
-        counter.value = value;
-      });
-      return subscription.cancel;
-    }, [viewModel]);
+      print("Button pressed ${clicks.value} times");
+
+      return null;
+    }, [clicks.value]);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Streams + Hooks Demo'),
-      ),
+      appBar: AppBar(title: Text("Steams + Hooks Demo")),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Counter Value:',
-            ),
-            Text(
-              '${counter.value}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 20),
-            Row(
+        child: StreamBuilder<int>(
+          stream: vm.counterStream,
+
+          initialData: 0,
+
+          builder: (context, snapshot) {
+            return Column(
               mainAxisAlignment: MainAxisAlignment.center,
+
               children: [
-                ElevatedButton(
-                  onPressed: () => viewModel.handleEvent(CounterEvent.increment),
-                  child: const Text('Increment'),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => viewModel.handleEvent(CounterEvent.decrement),
-                  child: const Text('Decrement'),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => viewModel.handleEvent(CounterEvent.reset),
-                  child: const Text('Reset'),
+                const Text("Counter", style: TextStyle(fontSize: 24),),
+                const SizedBox(height: 20,),
+                Text("${snapshot.data}", style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 20,),
+                Text("Button Presses: ${clicks.value}"),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        clicks.value++;
+                        vm.onEvent(CounterEvent.decrement);
+                      }, 
+                      child: const Text("-")
+                    ),
+                    const SizedBox(height: 20,),
+                    ElevatedButton(
+                      onPressed: () {
+                        clicks.value++;
+                        vm.onEvent(CounterEvent.increment);
+                      }, 
+                      child: const Text("+")
+                    ),
+                    const SizedBox(height: 20,),
+                    ElevatedButton(
+                      onPressed: () {
+                        clicks.value++;
+                        vm.onEvent(CounterEvent.reset);
+                      }, 
+                      child: const Text("reset")
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          }
         ),
-      ),
+      )
     );
   }
 }
